@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>agrotikos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <style>
+    /* Asegura que todas las imágenes tengan el mismo tamaño */
+    .ndvi-img {
+      width: 100%;
+      height: 240px;          /* altura fija para uniformidad */
+      object-fit: cover;      /* recorta manteniendo proporción */
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .badge-tag { font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">agrotikos</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <form action="/inicio" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Inicio</button>
+          </form>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <h2 class="text-center mb-4">Análisis NVID del terreno <i class="fa-solid fa-seedling"></i></h2>
+
+  <div class="container mt-3">
+    <div class="card frosted">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <div class="event-card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h5 class="card-title mb-0">Drone 1</h5>
+                  <span class="badge text-bg-success badge-tag"><i class="fa-solid fa-leaf me-1"></i>NDVI alto</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 small text-muted mb-2">
+                  <span><i class="fa-regular fa-calendar me-1"></i>2025-09-10</span>
+                  <span class="ms-3"><i class="fa-regular fa-clock me-1"></i>10:35</span>
+                  <span class="ms-3"><i class="fa-regular fa-bell me-1"></i>Sin alertas</span>
+                </div>
+                <img class="ndvi-img" src="https://scanforest.com/wp-content/uploads/2022/03/Scanforest-Inventaire-forestier-3d-1024x479.jpg" alt="Mapa NDVI 1">
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="event-card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h5 class="card-title mb-0">Drone 2</h5>
+                  <span class="badge text-bg-warning badge-tag"><i class="fa-solid fa-leaf me-1"></i>NDVI medio</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 small text-muted mb-2">
+                  <span><i class="fa-regular fa-calendar me-1"></i>2025-09-10</span>
+                  <span class="ms-3"><i class="fa-regular fa-clock me-1"></i>11:10</span>
+                  <span class="ms-3"><i class="fa-regular fa-bell me-1"></i>Vigor heterogéneo</span>
+                </div>
+                <img class="ndvi-img" src="https://www.cursosteledeteccion.com/wp-content/uploads/2018/01/lidar_forest-e1515662751258.jpg" alt="Mapa NDVI 2">
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="event-card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h5 class="card-title mb-0">Drone 3</h5>
+                  <span class="badge text-bg-danger badge-tag"><i class="fa-solid fa-triangle-exclamation me-1"></i>NDVI bajo</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 small text-muted mb-2">
+                  <span><i class="fa-regular fa-calendar me-1"></i>2025-09-10</span>
+                  <span class="ms-3"><i class="fa-regular fa-clock me-1"></i>12:05</span>
+                  <span class="ms-3 text-danger"><i class="fa-regular fa-bell me-1"></i>Alerta: estrés hídrico</span>
+                </div>
+                <img class="ndvi-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJ32LWPv-rzeSDYOc3Iqb42iJJSm8ktHBUO-1fSNYymmWPKUslW0ncgc-Kr2iSWgdeYV0&usqp=CAU" alt="Mapa NDVI 3">
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="event-card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h5 class="card-title mb-0">Índice de vegetación</h5>
+                  <span class="badge text-bg-primary badge-tag"><i class="fa-solid fa-chart-line me-1"></i>Resumen</span>
+                </div>
+                <img class="ndvi-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiusAQza40TNwfq-_6KHgi3wxOk2Re8sF8GA&s" alt="Mapa NDVI 4">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card frosted mt-3">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="card-title mb-0"><i class="fa-regular fa-bell me-2"></i>Hallazgos</h6>
+          <small class="muted">Hoy</small>
+        </div>
+        <ul class="mb-0">
+          <li>Zona norte con estrés hídrico (NDVI < 0.3)</li>
+          <li>Parche central con vigor alto (NDVI > 0.7)</li>
+          <li>Borde oeste con cobertura irregular</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <form action="/inicio" method="post" class="d-flex justify-content-center mt-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Regresar</button>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

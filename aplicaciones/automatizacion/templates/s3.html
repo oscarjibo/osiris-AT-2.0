@@ -1,0 +1,503 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalLabel">Mensajes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if messages %}
+                {% for message in messages %}
+                <div{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    $(document).ready(function () {
+        {% if messages %}
+        $('#messageModal').modal('show');
+        {% endif %}
+    });
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>agrotikos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        body {
+      background-color: #f2f4f7;
+            /* Reemplaza 'ruta/a/tu/imagen.jpg' con la ruta a tu imagen de fondo */
+            background-size: cover;
+            /* La imagen de fondo cubrirÃ¡ todo el cuerpo */
+            background-position: center;
+            /* Centra la imagen de fondo */
+            background-repeat: no-repeat;
+            /* Evita que la imagen de fondo se repita */
+            /*transform: scale(1.15); /* Escala toda la pÃ¡gina en un 25% */
+        }
+
+
+
+        .navbar {
+            background-color: #343a40;
+        }
+
+        .navbar-brand {
+            color: #fff !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: #ffffff !important;
+        }
+
+        .container {
+            max-width: 960px;
+        }
+
+        .table th,
+        .table td {
+            padding: .75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .row {
+            --bs-gutter-x: 0;
+        }
+
+        .col-md-6 {
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .col-md-6 {
+                width: 50%;
+                max-width: 50%;
+            }
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 20px;
+            margin: 9px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .input-group {
+            width: 360px;
+
+            margin: 9px;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        /* Actuator cards */
+        .act-card { border-radius: 14px; padding: 14px; box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease; cursor: pointer; border: 1px solid rgba(0,0,0,.06); }
+        .act-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(2,6,23,.15); }
+        .act-card .title { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .act-card .status { font-weight: 700; }
+        .act-card.on { background: linear-gradient(180deg, rgba(16,185,129,0.15), rgba(16,185,129,0.08)); border-left: 4px solid #10b981; }
+        .act-card.on .status { color: #047857; }
+        .act-card.off { background: linear-gradient(180deg, rgba(239,68,68,0.12), rgba(239,68,68,0.07)); border-left: 4px solid #ef4444; }
+        .act-card.off .status { color: #991b1b; }
+        .zone-toolbar { margin-bottom: 12px; }
+        #actuatorsMap { height: 420px; border-radius: 12px; }
+        /* Cards grid and colored icons for redesigned UI */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .act-card { border-radius: 14px; padding: 14px; box-shadow: 0 6px 14px rgba(2,6,23,.08); transition: transform .15s ease, box-shadow .15s ease; border: 1px solid rgba(0,0,0,.06); background: #fff; }
+        .act-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(2,6,23,.14); }
+        .icon-wrap { width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
+        .icon-pump { background: #e0f2fe; color: #0369a1; }
+        .icon-valve { background: #ede9fe; color: #6d28d9; }
+        .icon-sprinkler { background: #ecfccb; color: #3f6212; }
+        .icon-fan { background: #fef3c7; color: #a16207; }
+        .icon-door { background: #fee2e2; color: #b91c1c; }
+        .icon-light { background: #fff7ed; color: #b45309; }
+        .icon-extractor { background: #e0e7ff; color: #3730a3; }
+        .icon-neb { background: #cffafe; color: #0e7490; }
+        .icon-spray { background: #fce7f3; color: #9d174d; }
+        .icon-vent { background: #dcfce7; color: #166534; }
+        /* Map markers using Font Awesome */
+        .leaflet-div-icon { background: transparent; border: none; }
+        .marker-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; border: 2px solid rgba(0,0,0,.25); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+        .marker-ico i { font-size: 18px; }
+        .marker-ico.on { background: #16a34a; }
+        .marker-ico.off { background: #ef4444; }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">agrotikos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <form action="/inicio" method="post">
+                        {% csrf_token %}
+                        <button id="btn-monitoreo" type="submit" class="btn btn-primary">Inicio</button>
+                    </form>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <i class="fa-solid fa-house-signal fa-2x"></i>
+        <h2 class="mb-0">Control de Riego y Actuadores</h2>
+      </div>
+<!--ZONE_TABS_START-->
+      <ul class="nav nav-pills mb-3" id="zonesTabs">
+        <li class="nav-item"><button class="nav-link zone-tab active" data-target="#panel-zonaA">Zona A</button></li>
+        <li class="nav-item"><button class="nav-link zone-tab" data-target="#panel-zonaB">Zona B</button></li>
+        <li class="nav-item"><button class="nav-link zone-tab" data-target="#panel-otras">Otras acciones</button></li>
+      </ul>
+      <div id="panel-zonaA">
+        <div class="card frosted">
+          <div class="card-body">
+              <h5 class="card-title mb-3">Zona A</h5>
+              <div class="row gy-2">
+                <div class="col-7">Bomba A1</div>
+                <div class="col-5 text-end"><button data-key="bombaA1" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Bomba A2</div>
+                <div class="col-5 text-end"><button data-key="bombaA2" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">VÃ¡lvula A1</div>
+                <div class="col-5 text-end"><button data-key="valvulaA1" class="btn btn-outline-secondary act-toggle">Cerrada</button></div>
+                <div class="col-7">VÃ¡lvula A2</div>
+                <div class="col-5 text-end"><button data-key="valvulaA2" class="btn btn-outline-secondary act-toggle">Cerrada</button></div>
+                <div class="col-7">Aspersor A1</div>
+                <div class="col-5 text-end"><button data-key="aspersorA1" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Aspersor A2</div>
+                <div class="col-5 text-end"><button data-key="aspersorA2" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Ventilador A1</div>
+                <div class="col-5 text-end"><button data-key="ventA1" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Puerta A</div>
+                <div class="col-5 text-end"><button data-key="puertaA" class="btn btn-outline-secondary act-toggle">Cerrada</button></div>
+                <div class="col-7">Luces A</div>
+                <div class="col-5 text-end"><button data-key="luzA" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panel-zonaB" class="d-none">
+        <div class="card frosted">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Zona B</h5>
+              <div class="row gy-2">
+                <div class="col-7">Bomba B1</div>
+                <div class="col-5 text-end"><button data-key="bombaB1" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Bomba B2</div>
+                <div class="col-5 text-end"><button data-key="bombaB2" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">VÃ¡lvula B1</div>
+                <div class="col-5 text-end"><button data-key="valvulaB1" class="btn btn-outline-secondary act-toggle">Cerrada</button></div>
+                <div class="col-7">VÃ¡lvula B2</div>
+                <div class="col-5 text-end"><button data-key="valvulaB2" class="btn btn-outline-secondary act-toggle">Cerrada</button></div>
+                <div class="col-7">Ventilador B1</div>
+                <div class="col-5 text-end"><button data-key="ventB1" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Puerta B</div>
+                <div class="col-5 text-end"><button data-key="puertaB" class="btn btn-outline-secondary act-toggle">Cerrada</button></div>
+                <div class="col-7">Extractor</div>
+                <div class="col-5 text-end"><button data-key="extractor" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Nebulizador</div>
+                <div class="col-5 text-end"><button data-key="nebulizador" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panel-otras" class="d-none">
+        <div class="card frosted">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Otras acciones</h5>
+            <div class="row gy-2">
+                <div class="col-7">Riego lote A</div>
+                <div class="col-5 text-end"><button data-key="riegoA" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Riego lote B</div>
+                <div class="col-5 text-end"><button data-key="riegoB" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">Riego lote C</div>
+                <div class="col-5 text-end"><button data-key="riegoC" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">VentilaciÃ³n Invernadero</div>
+                <div class="col-5 text-end"><button data-key="ventInvernadero" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">VentilaciÃ³n Sala Curado</div>
+                <div class="col-5 text-end"><button data-key="ventCurado" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+                <div class="col-7">FumigaciÃ³n</div>
+                <div class="col-5 text-end"><button data-key="fumigacion" class="btn btn-outline-secondary act-toggle">Apagado</button></div>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="d-flex justify-content-center gap-3 mt-3">
+        <button id="stopAllNew" type="button" class="btn btn-danger">APAGAR TODO</button>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      // Tablero de actuadores unificado: Zona A / Zona B / Otras acciones
+      $(function(){
+        const states = {
+          bombaA1:false,bombaA2:false,bombaB1:false,bombaB2:false,
+          valvulaA1:false,valvulaA2:false,valvulaB1:false,valvulaB2:false,
+          aspersorA1:false,aspersorA2:false,
+          ventA1:false,ventB1:false,
+          puertaA:false,puertaB:false,
+          luzA:false,extractor:false,nebulizador:false,
+          riegoA:false,riegoB:false,riegoC:false,
+          ventInvernadero:false,ventCurado:false,fumigacion:false
+        };
+
+        function updateBtn($b){
+          const k=$b.data('key'); const on=!!states[k];
+          const isDoor=(k==='puertaA'||k==='puertaB');
+          $b.toggleClass('btn-success', on).toggleClass('btn-outline-secondary', !on)
+            .text(isDoor? (on?'Abierta':'Cerrada') : (on?'Encendido':'Apagado'));
+        }
+
+        $('.act-toggle').each(function(){ updateBtn($(this)); });
+        $(document).on('click','.act-toggle',function(){
+          const k=$(this).data('key'); states[k]=!states[k]; updateBtn($(this));
+        });
+        $('#stopAllNew').on('click',function(){
+          Object.keys(states).forEach(k=>states[k]=false);
+          $('.act-toggle').each(function(){ updateBtn($(this)); });
+        });
+
+        // Tabs de zonas: muestra/oculta paneles
+        function showPanel(sel){
+          ['#panel-zonaA','#panel-zonaB','#panel-otras'].forEach(id=>{
+            if(id===sel) $(id).removeClass('d-none'); else $(id).addClass('d-none');
+          });
+        }
+        $(document).on('click','.zone-tab',function(){
+          $('.zone-tab').removeClass('active');
+          $(this).addClass('active');
+          showPanel($(this).data('target'));
+        });
+        showPanel('#panel-zonaA');
+      });
+    </script>
+
+    <!-- New unified cards + map script (injects UI and hides old panels) -->
+    <script>
+      $(function(){
+        const $tabs = $('#zonesTabs');
+        if(!$tabs.length) return;
+
+        // Map tab buttons to zone keys
+        $tabs.find('.zone-tab').each(function(){
+          const t = $(this).text().trim().toLowerCase();
+          let z = 'zonaA';
+          if(t.includes('zona b')) z = 'zonaB';
+          if(t.includes('otras')) z = 'otras';
+          $(this).attr('data-zone', z).removeAttr('data-target');
+        });
+
+        // Insert redesigned containers after tabs
+        const $toolbar = $(`
+          <div class="zone-toolbar">
+            <button id="zoneOn" class="btn btn-success btn-sm">Encender zona</button>
+            <button id="zoneOff" class="btn btn-outline-danger btn-sm">Apagar zona</button>
+          </div>
+        `);
+        const $cards = $(`<div class="card frosted mb-3"><div class="card-body"><div id="cardsGrid" class="cards-grid"></div></div></div>`);
+        const $map = $(`<div class="card frosted"><div class="card-body"><h6 class="mb-2">Mapa de actuadores</h6><div id="actuatorsMap"></div></div></div>`);
+        $tabs.after($toolbar).after($cards).after($map);
+
+        // Hide legacy per-zone panels
+        $('#panel-zonaA,#panel-zonaB,#panel-otras').addClass('d-none');
+
+        // Layout and behavior
+        const actuatorsByZone = {
+          // Zona A alrededor de 6.252, -75.563
+          zonaA: [
+            { key:'bombaA1', name:'Bomba A1', type:'pump', lat: 6.2524, lng: -75.5629 },
+            { key:'bombaA2', name:'Bomba A2', type:'pump', lat: 6.2528, lng: -75.5632 },
+            { key:'valvulaA1', name:'Válvula A1', type:'valve', lat: 6.2519, lng: -75.5630 },
+            { key:'valvulaA2', name:'Válvula A2', type:'valve', lat: 6.2521, lng: -75.5635 },
+            { key:'aspersorA1', name:'Aspersor A1', type:'sprinkler', lat: 6.2520, lng: -75.5626 },
+            { key:'aspersorA2', name:'Aspersor A2', type:'sprinkler', lat: 6.2516, lng: -75.5632 },
+            { key:'ventA1', name:'Ventilador A1', type:'fan', lat: 6.2517, lng: -75.5628 },
+            { key:'puertaA', name:'Puerta A', type:'door', lat: 6.2523, lng: -75.5625 },
+            { key:'luzA', name:'Luz A', type:'light', lat: 6.2518, lng: -75.5624 }
+          ],
+          // Zona B alrededor de 6.253, -75.564
+          zonaB: [
+            { key:'bombaB1', name:'Bomba B1', type:'pump', lat: 6.2532, lng: -75.5641 },
+            { key:'bombaB2', name:'Bomba B2', type:'pump', lat: 6.2536, lng: -75.5646 },
+            { key:'valvulaB1', name:'Válvula B1', type:'valve', lat: 6.2531, lng: -75.5644 },
+            { key:'valvulaB2', name:'Válvula B2', type:'valve', lat: 6.2529, lng: -75.5642 },
+            { key:'ventB1', name:'Ventilador B1', type:'fan', lat: 6.2530, lng: -75.5638 },
+            { key:'puertaB', name:'Puerta B', type:'door', lat: 6.2534, lng: -75.5639 },
+            { key:'extractor', name:'Extractor', type:'extractor', lat: 6.2535, lng: -75.5643 },
+            { key:'nebulizador', name:'Nebulizador', type:'neb', lat: 6.2537, lng: -75.5637 }
+          ],
+          // Otras acciones alrededor de 6.251, -75.562
+          otras: [
+            { key:'riegoA', name:'Riego lote A', type:'sprinkler', lat: 6.2512, lng: -75.5627 },
+            { key:'riegoB', name:'Riego lote B', type:'sprinkler', lat: 6.2510, lng: -75.5629 },
+            { key:'riegoC', name:'Riego lote C', type:'sprinkler', lat: 6.2513, lng: -75.5632 },
+            { key:'ventInvernadero', name:'Ventilación Invernadero', type:'vent', lat: 6.2509, lng: -75.5625 },
+            { key:'ventCurado', name:'Ventilación Sala Curado', type:'vent', lat: 6.2508, lng: -75.5628 },
+            { key:'fumigacion', name:'Fumigación', type:'spray', lat: 6.2511, lng: -75.5623 }
+          ]
+        };
+
+        const typeIcon = {
+          pump: { cls:'icon-pump', fa:'fa-faucet' },
+          valve: { cls:'icon-valve', fa:'fa-screwdriver-wrench' },
+          sprinkler: { cls:'icon-sprinkler', fa:'fa-shower' },
+          fan: { cls:'icon-fan', fa:'fa-fan' },
+          door: { cls:'icon-door', fa:'fa-door-closed' },
+          light: { cls:'icon-light', fa:'fa-lightbulb' },
+          extractor: { cls:'icon-extractor', fa:'fa-wind' },
+          neb: { cls:'icon-neb', fa:'fa-cloud' },
+          spray: { cls:'icon-spray', fa:'fa-spray-can' },
+          vent: { cls:'icon-vent', fa:'fa-arrows-rotate' }
+        };
+
+        // State
+        const states = {};
+        Object.values(actuatorsByZone).flat().forEach(a => states[a.key] = false);
+
+        // Build map
+        const map = L.map('actuatorsMap', { zoomControl: true });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+        const markers = {}; // key -> marker
+        const color = on => on ? '#16a34a' : '#ef4444';
+        const byKey = {};
+        Object.entries(actuatorsByZone).forEach(([z, arr])=> arr.forEach(a=> byKey[a.key]=a));
+
+        // Corrimiento hacia el este por zona (km → grados por latitud)
+        const SHIFT_EAST_KM = { zonaA: 50, zonaB: 30, otras: 50 };
+        const SPREAD_FACTOR = 1.6; // aleja los actuadores respecto al centro
+        function kmToDegLng(latDeg, km){
+          const rad = Math.PI/180;
+          const kmPerDeg = 111.32 * Math.cos(latDeg * rad);
+          return km / kmPerDeg;
+        }
+
+        function buildMarkerIcon(a, on){
+          const ic = typeIcon[a.type] || {fa:'fa-robot'};
+          return L.divIcon({
+            className: 'custom-marker',
+            html: `<div class="marker-ico ${on?'on':'off'}"><i class="fa-solid ${ic.fa}"></i></div>`,
+            iconSize: [40,40],
+            iconAnchor: [20,20]
+          });
+        }
+
+        function setMarkers(zone){
+          Object.values(markers).forEach(m=> map.removeLayer(m));
+          for(const k in markers) delete markers[k];
+          const list = actuatorsByZone[zone] || [];
+          const group = [];
+          // Centro de la zona
+          let cLat = 0, cLng = 0;
+          list.forEach(a=>{ cLat += a.lat; cLng += a.lng; });
+          if(list.length){ cLat /= list.length; cLng /= list.length; }
+          list.forEach(a => {
+            const on = !!states[a.key];
+            // expandir respecto al centro
+            const eLat = cLat + (a.lat - cLat) * SPREAD_FACTOR;
+            const eLng = cLng + (a.lng - cLng) * SPREAD_FACTOR;
+            const shiftKm = SHIFT_EAST_KM[zone] || 0;
+            const shiftedLng = eLng + kmToDegLng(eLat, shiftKm);
+            const m = L.marker([eLat, shiftedLng], { icon: buildMarkerIcon(a, on) }).addTo(map);
+            m.bindPopup(`<strong>${a.name}</strong><br/>Estado: ${on? 'Encendido':'Apagado'}`);
+            markers[a.key] = m; group.push(m);
+          });
+          if(group.length){ const grp = L.featureGroup(group); map.fitBounds(grp.getBounds().pad(0.5)); } else { const shiftKm = SHIFT_EAST_KM[zone] || 0; map.setView([6.252, -75.563 + kmToDegLng(6.252, shiftKm)], 16); }
+        }
+
+        function render(zone){
+          const $grid = $('#cardsGrid').empty();
+          (actuatorsByZone[zone]||[]).forEach(a => {
+            const on = !!states[a.key];
+            const ic = typeIcon[a.type] || {cls:'', fa:'fa-robot'};
+            $grid.append(`
+              <div class="act-card ${on? 'on':'off'}" data-key="${a.key}">
+                <div class="title mb-2">
+                  <span class="icon-wrap ${ic.cls}"><i class="fa-solid ${ic.fa}"></i></span>
+                  <span>${a.name}</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="status">${on? (a.type==='door'?'Abierta':'Encendido') : (a.type==='door'?'Cerrada':'Apagado')}</span>
+                  <button class="btn btn-sm ${on? 'btn-success':'btn-outline-secondary'} act-toggle2" data-key="${a.key}">${on? (a.type==='door'?'Cerrar':'Apagar') : (a.type==='door'?'Abrir':'Encender')}</button>
+                </div>
+              </div>
+            `);
+          });
+          setMarkers(zone);
+        }
+
+        function refreshCard(key){
+          const on = !!states[key];
+          const $card = $(`.act-card[data-key="${key}"]`);
+          const isDoor = /puerta/i.test(key);
+          $card.toggleClass('on', on).toggleClass('off', !on);
+          $card.find('.status').text(on? (isDoor? 'Abierta':'Encendido') : (isDoor? 'Cerrada':'Apagado'));
+          const $btn = $card.find('.act-toggle2');
+          $btn.toggleClass('btn-success', on).toggleClass('btn-outline-secondary', !on)
+              .text(on? (isDoor? 'Cerrar':'Apagar') : (isDoor? 'Abrir':'Encender'));
+          if(markers[key]){
+            const a = byKey[key];
+            markers[key].setIcon(buildMarkerIcon(a, on));
+            if(markers[key].getPopup()) markers[key].setPopupContent(`<strong>${a.name}</strong><br/>Estado: ${on? 'Encendido':'Apagado'}`);
+          }
+        }
+
+        // Events
+        let currentZone = 'zonaA';
+        $tabs.on('click', '.zone-tab', function(e){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+          $tabs.find('.zone-tab').removeClass('active'); $(this).addClass('active');
+          currentZone = $(this).data('zone');
+          render(currentZone);
+        });
+        $(document).on('click', '.act-toggle2', function(){ const k=$(this).data('key'); states[k]=!states[k]; refreshCard(k); });
+        $('#zoneOn').on('click', ()=>{ (actuatorsByZone[currentZone]||[]).forEach(a=>{ states[a.key]=true; refreshCard(a.key); }); });
+        $('#zoneOff').on('click', ()=>{ (actuatorsByZone[currentZone]||[]).forEach(a=>{ states[a.key]=false; refreshCard(a.key); }); });
+        $('#stopAllNew').on('click', ()=>{ Object.keys(states).forEach(k=>{ states[k]=false; }); render(currentZone); });
+
+        // Init
+        render(currentZone);
+      });
+    </script>
+
+  </body>
+  </html>

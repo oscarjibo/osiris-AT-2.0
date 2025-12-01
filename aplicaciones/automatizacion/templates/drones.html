@@ -1,0 +1,404 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>agrotikos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <style>
+    #droneMap { height: 360px; border-radius: 12px; }
+    .kpi .value { font-weight: 700; font-size: 1.2rem; }
+    .kpi .label { font-size: .85rem; color: #6b7280; }
+    .route-legend span { display:inline-flex; align-items:center; gap:8px; margin-right:16px; }
+    .drone-counter { font-variant-numeric: tabular-nums; }
+  </style>
+  <!-- Nota: Se corrigió la codificación y se añadieron nuevos campos -->
+  <!-- Soporte para drones: DJI 4 Pro, DJI 3 MS, Thermal, Fumigación -->
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background:#343a40;">
+    <div class="container">
+      <a class="navbar-brand" href="#">agrotikos</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <form action="/inicio" method="post">{% csrf_token %}
+            <button class="btn btn-primary">Inicio</button>
+          </form>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-3">
+    <h2 class="text-center mb-3">Drones y tareas <i class="fa-solid fa-drone"></i></h2>
+
+    <div class="row g-3">
+      <!-- Programación -->
+      <div class="col-lg-5">
+        <div class="card frosted h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Programación de vuelo</h5>
+
+            <form id="planForm" onsubmit="event.preventDefault(); programarRuta();">
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="form-label">Fecha</label>
+                  <input type="date" class="form-control" id="fecha" required>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Hora</label>
+                  <input type="time" class="form-control" id="hora" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Tipo de dron</label>
+                  <select class="form-select" id="drone" required>
+                    <option value="dji4pro">DJI Phantom 4 Pro</option>
+                    <option value="dji3ms">DJI Mavic 3 Multiespectral</option>
+                    <option value="thermal">Cámara térmica</option>
+                    <option value="fumigacion">Dron de fumigación y aspersión</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Tipo de recolección</label>
+                  <select class="form-select" id="tipo" required>
+                    <option value="ndvi">Índice de vegetación (NDVI)</option>
+                    <option value="termica">Inspección térmica</option>
+                    <option value="rgb">Imágenes RGB</option>
+                    <option value="animales">Conteo de animales</option>
+                    <option value="vigilancia">Vigilancia perimetral</option>
+                    <option value="seguimiento">Seguimiento</option>
+                    <option value="fumigacion">Fumigación / aspersión</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Lote</label>
+                  <select class="form-select" id="lote">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Altura (m)</label>
+                  <input type="number" class="form-control" id="altura" value="80" min="10" max="200">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Observaciones</label>
+                  <input type="text" class="form-control" id="obs" placeholder="Detalles adicionales...">
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-route me-1"></i>Programar ruta</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="reiniciar()"><i class="fa-solid fa-rotate me-1"></i>Reiniciar</button>
+              </div>
+            </form>
+
+            <hr>
+            <h6 class="mb-2">Tareas configuradas</h6>
+            <ul id="taskList" class="mb-0">
+              <li>Recorrido perimetral Lote A (vigilancia)</li>
+              <li>Levantamiento NDVI Lote B</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="col-lg-7">
+        <div class="row g-3">
+          <div class="col-6 col-xl-3">
+            <div class="card frosted kpi">
+              <div class="card-body">
+                <div class="label">Hora</div>
+                <div id="kpiHora" class="value">--:--</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-3">
+            <div class="card frosted kpi">
+              <div class="card-body">
+                <div class="label">Clima</div>
+                <div class="value"><i class="fa-solid fa-sun me-1"></i><span id="kpiClima">Despejado 26°C</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-3">
+            <div class="card frosted kpi">
+              <div class="card-body">
+                <div class="label">Vacas</div>
+                <div id="kpiVacas" class="value drone-counter">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-xl-3">
+            <div class="card frosted kpi">
+              <div class="card-body">
+                <div class="label">Personas</div>
+                <div id="kpiPersonas" class="value drone-counter">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card frosted">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h6 class="card-title mb-0"><i class="fa-solid fa-map-location-dot me-2"></i>Ruta y supervisión</h6>
+                  <div class="route-legend">
+                    <span><i class="fa-solid fa-circle" style="color:#16a34a"></i> Inicio</span>
+                    <span><i class="fa-solid fa-circle" style="color:#dc2626"></i> Fin</span>
+                  </div>
+                </div>
+                <div id="droneMap"></div>
+                <div class="mt-3">
+                  <div class="progress" role="progressbar" aria-label="Progreso" aria-valuemin="0" aria-valuemax="100">
+                    <div id="progressBar" class="progress-bar" style="width: 0%">0%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hallazgos / Aseguramiento -->
+    <div class="card frosted mt-3">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="card-title mb-0"><i class="fa-regular fa-clipboard me-2"></i>Monitoreo y aseguramiento</h6>
+          <small class="muted">En tiempo real</small>
+        </div>
+        <ul class="mb-0" id="feed">
+          <li>Recorridos activos: 1 | Lote: <span id="feedLote">A</span></li>
+          <li>Ejecución de tareas: <span id="feedTarea">NDVI</span></li>
+          <li>Procesos productivos asegurados: Siembra y riego verificados</li>
+        </ul>
+      </div>
+    </div>
+
+    <form action="/inicio" method="post" class="d-flex justify-content-center mt-3">{% csrf_token %}
+      <button type="submit" class="btn btn-primary">Regresar</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // KPI: hora en vivo
+    function tickClock(){
+      const d=new Date();
+      const pad=n=>n.toString().padStart(2,'0');
+      document.getElementById('kpiHora').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    setInterval(tickClock, 1000); tickClock();
+
+    // Mapa Leaflet con ruta simulada
+    const map = L.map('droneMap').setView([4.711, -74.072], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Rutas base por lote (simuladas)
+    const rutas = {
+      A: [[4.711,-74.072],[4.714,-74.070],[4.716,-74.074],[4.713,-74.076],[4.711,-74.072]],
+      B: [[4.705,-74.080],[4.709,-74.078],[4.710,-74.083],[4.706,-74.085],[4.705,-74.080]],
+      C: [[4.720,-74.060],[4.723,-74.058],[4.724,-74.062],[4.721,-74.064],[4.720,-74.060]]
+    };
+
+    // Icono de dron
+    const droneIcon = L.divIcon({
+      html: '<i class="fa-solid fa-drone" style="font-size:24px;color:#1d4ed8;"></i>',
+      className: 'dron-icon', iconSize: [24,24]
+    });
+
+    let poly = null, marker = null, animTimer = null, step = 0; 
+    let vacas = 0, personas = 0;
+
+    const taskLabels = {
+      ndvi: 'Índice de vegetación (NDVI)',
+      termica: 'Inspección térmica',
+      rgb: 'Imágenes RGB',
+      animales: 'Conteo de animales',
+      vigilancia: 'Vigilancia perimetral',
+      seguimiento: 'Seguimiento',
+      fumigacion: 'Fumigación / aspersión'
+    };
+
+    const droneLabels = {
+      dji4pro: 'DJI Phantom 4 Pro',
+      dji3ms: 'DJI Mavic 3 Multiespectral',
+      thermal: 'Cámara térmica',
+      fumigacion: 'Dron de fumigación y aspersión'
+    };
+
+    const droneCapabilities = {
+      // P4 Pro → animales, vigilancia, seguimiento (+ RGB)
+      dji4pro: ['animales','vigilancia','seguimiento','rgb'],
+      // Mavic 3 MS → NDVI y RGB
+      dji3ms: ['ndvi','rgb'],
+      // Thermal → inspección térmica (opcional vigilancia)
+      thermal: ['termica','vigilancia'],
+      // Fumigación → aspersión
+      fumigacion: ['fumigacion']
+    };
+
+    function updateTipoOptions(){
+      const drone = document.getElementById('drone').value;
+      const allowed = new Set(droneCapabilities[drone] || []);
+      const tipoSel = document.getElementById('tipo');
+      let firstAllowed = null;
+      for (const opt of tipoSel.options){
+        const ok = allowed.has(opt.value);
+        opt.disabled = !ok;
+        opt.hidden = !ok;
+        if (ok && !firstAllowed) firstAllowed = opt.value;
+      }
+      if (!allowed.has(tipoSel.value) && firstAllowed){
+        tipoSel.value = firstAllowed;
+      }
+    }
+
+    function limpiarRuta(){
+      if (animTimer) { clearInterval(animTimer); animTimer = null; }
+      if (poly) { map.removeLayer(poly); poly = null; }
+      if (marker) { map.removeLayer(marker); marker = null; }
+      step = 0; vacas = 0; personas = 0;
+      document.getElementById('kpiVacas').textContent = '0';
+      document.getElementById('kpiPersonas').textContent = '0';
+      document.getElementById('progressBar').style.width = '0%';
+      document.getElementById('progressBar').textContent = '0%';
+    }
+
+    function actualizarFeed(lote,tipo){
+      document.getElementById('feedLote').textContent = lote;
+      document.getElementById('feedTarea').textContent = taskLabels[tipo] || (tipo || '').toUpperCase();
+    }
+
+    function programarRuta(){
+      const fecha = document.getElementById('fecha').value;
+      const hora  = document.getElementById('hora').value;
+      const tipo  = document.getElementById('tipo').value;
+      const drone = document.getElementById('drone').value;
+      const lote  = document.getElementById('lote').value;
+      const obs   = document.getElementById('obs').value;
+
+      // Agrega tarea a la lista
+      const item = document.createElement('li');
+      const tipoTxt = taskLabels[tipo] || (tipo || '').toUpperCase();
+      const droneTxt = droneLabels[drone] || drone;
+      item.textContent = `${fecha} ${hora} | Lote ${lote} | ${tipoTxt} | Dron: ${droneTxt}${obs? ' | '+obs: ''}`;
+      document.getElementById('taskList').appendChild(item);
+
+      actualizarFeed(lote, tipo);
+      simularRuta(lote, tipo);
+    }
+
+    function simularRuta(lote, tipo){
+      limpiarRuta();
+      const pts = rutas[lote] || rutas.A;
+      poly = L.polyline(pts, {color:'#2563eb', weight:4}).addTo(map);
+      L.circleMarker(pts[0], {radius:6, color:'#16a34a'}).addTo(map);
+      L.circleMarker(pts[pts.length-1], {radius:6, color:'#dc2626'}).addTo(map);
+      map.fitBounds(poly.getBounds(), {padding:[20,20]});
+      marker = L.marker(pts[0], {icon:droneIcon}).addTo(map);
+
+      const total = pts.length;
+      animTimer = setInterval(()=>{
+        step++;
+        if (step >= total){
+          clearInterval(animTimer); animTimer=null;
+          document.getElementById('progressBar').style.width = '100%';
+          document.getElementById('progressBar').textContent = '100%';
+          return;
+        }
+        marker.setLatLng(pts[step]);
+        const pct = Math.floor((step/(total-1))*100);
+        document.getElementById('progressBar').style.width = pct+'%';
+        document.getElementById('progressBar').textContent = pct+'%';
+
+        // Eventos según tarea seleccionada
+        switch (tipo) {
+          case 'animales': {
+            if (step === 2 || step === 4) {
+              const inc = Math.floor(Math.random()*3)+1;
+              vacas += inc;
+              document.getElementById('kpiVacas').textContent = String(vacas);
+              agregarEvento(`Conteo de ganado actualizado (+${inc})`);
+            }
+            break;
+          }
+          case 'vigilancia':
+          case 'seguimiento': {
+            if (step === 3) {
+              personas += 1;
+              document.getElementById('kpiPersonas').textContent = String(personas);
+              agregarEvento('Persona detectada en límite del lote');
+            }
+            break;
+          }
+          case 'termica': {
+            if (step === 3) {
+              agregarEvento('Punto caliente detectado (~68°C)');
+            }
+            break;
+          }
+          case 'ndvi': {
+            if (step === 2) {
+              agregarEvento('NDVI bajo en zona norte (< 0.3)');
+            }
+            break;
+          }
+          case 'rgb': {
+            if (step === 2) {
+              agregarEvento('Imagen RGB capturada con alta resolución');
+            }
+            break;
+          }
+          case 'fumigacion': {
+            if (step === 3) agregarEvento('Aspersión completada al 50%');
+            if (step === 4) agregarEvento('Aspersión completada al 100%');
+            break;
+          }
+          default:
+            break;
+        }
+      }, 1200);
+    }
+
+    function agregarEvento(texto){
+      const li = document.createElement('li');
+      li.textContent = texto;
+      document.getElementById('feed').appendChild(li);
+    }
+
+    function reiniciar(){
+      limpiarRuta();
+    }
+
+    // Inicializa filtrado de tareas por tipo de dron
+    document.addEventListener('DOMContentLoaded', updateTipoOptions);
+    // Ejecuta también al cargar por seguridad (script al final del body)
+    setTimeout(updateTipoOptions, 0);
+    document.addEventListener('change', (e)=>{
+      if (e.target && e.target.id === 'drone') updateTipoOptions();
+    });
+
+    // Ruta inicial por defecto (ajusta a selección actual)
+    (function initDefault(){
+      try { updateTipoOptions(); } catch(e){}
+      const tipoIni = (document.getElementById('tipo')||{}).value || 'ndvi';
+      simularRuta('A', tipoIni);
+    })();
+  </script>
+</body>
+</html>
+

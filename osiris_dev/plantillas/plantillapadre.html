@@ -1,0 +1,25 @@
+﻿{%load static%}
+<html>
+    <head>
+        <title>{%block title%} {%endblock%}</title>
+        <link   type= 'text/css' href='{% static "css/plantillabarra.css"  %}', rel="stylesheet">
+        <style>
+            body {
+      background-color: #f2f4f7;
+            }
+          </style>
+
+
+    </head>
+    <body>
+        {%include "plantillabarra.html"%}
+        <h1>AGROTIKOS V1.0</h1>
+        <br>
+        {%block content%}
+        {%endblock%}
+        <p> este es elpie de la pagina     </p>
+        <script type="text/javascript" src = '{% static "js/plantillapadre.js" %}'>  a </script>
+    </body>
+</html>
+
+

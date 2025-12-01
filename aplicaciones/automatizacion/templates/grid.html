@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>agrotikos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f2f4f7; background-size: cover; background-position: center; background-repeat: no-repeat; }
+    .navbar { background-color: #343a40; }
+    .navbar-brand, .navbar-nav .nav-link { color: #fff !important; }
+    .event-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+    .event-card { background-color: #fff; border: 10px solid #dee2e6; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,.1); transition: transform .3s ease; }
+    .event-card:hover { transform: translateY(-5px); }
+    .event-card .card-body { padding: 20px; }
+    .event-card .card-title { font-size: 24px; margin-bottom: 10px; color: #343a40; }
+    .event-card .card-text { color: #102b42; }
+    .event-card .fa-solid { color: #140e69; }
+    .btn-primary { background-color: #007bff; border-color: #007bff; border-radius: 20px; transition: background-color .3s ease, border-color .3s ease; }
+    .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
+  </style>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">agrotikos</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <form action="/salir" method="post">
+            {% csrf_token %}
+            <button id="btn-monitoreo" type="submit" class="btn btn-primary">Salir</button>
+          </form>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container event-grid">
+    <div class="row">
+      <!-- 1. Monitoreo de su finca -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Monitoreo de su finca</h5>
+        <p class="card-text"><i class="fa-solid fa-passport fa-4x"></i></p>
+        <form action="/s1" method="post">{% csrf_token %}<button id="btn-monitoreo" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 2. Análisis NVID -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Análisis NVID</h5>
+        <p class="card-text"><i class="fa-solid fa-seedling fa-4x"></i></p>
+        <form action="/nvid" method="post">{% csrf_token %}<button id="btn-nvid" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 3. Datos del cultivo -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Datos del cultivo</h5>
+        <p class="card-text"><i class="fa-solid fa-tree fa-4x"></i></p>
+        <form action="/s2" method="post">{% csrf_token %}<button id="btn-datos-cultivo" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 4. Control del cultivo -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Control del cultivo</h5>
+        <p class="card-text"><i class="fa-solid fa-users-gear fa-4x"></i></p>
+        <form action="/control" method="post">{% csrf_token %}<button id="btn-control" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 5. Centro de configuración por IA -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Centro de configuración por IA</h5>
+        <p class="card-text"><i class="fa-solid fa-cloud fa-4x"></i></p>
+        <form action="/ia" method="post">{% csrf_token %}<button id="btn-ia" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 6. Seguridad -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Seguridad</h5>
+        <p class="card-text"><i class="fa-solid fa-eye-slash fa-4x"></i></p>
+        <form action="/yolov5" method="post">{% csrf_token %}<button id="btn-seguridad" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 7. Habla con tu cultivo -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Habla con tu cultivo</h5>
+        <p class="card-text"><i class="fa-solid fa-comment fa-4x"></i></p>
+        <form action="/chat" method="post">{% csrf_token %}<button id="btn-chat" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 8. Cercas virtuales -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Cercas virtuales</h5>
+        <p class="card-text"><i class="fa-solid fa-cow fa-4x"></i></p>
+        <form action="/cercas" method="post">{% csrf_token %}<button id="btn-cercas" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- Drones y tareas -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Drones y tareas</h5>
+        <p class="card-text">
+          <svg class="icon-drone" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill="currentColor">
+              <circle cx="12" cy="12" r="8"/>
+              <circle cx="52" cy="12" r="8"/>
+              <circle cx="12" cy="52" r="8"/>
+              <circle cx="52" cy="52" r="8"/>
+              <rect x="28" y="24" width="8" height="16" rx="2"/>
+              <rect x="22" y="30" width="20" height="8" rx="2"/>
+              <rect x="30" y="8" width="4" height="48" fill-opacity="0.35"/>
+              <rect x="8" y="30" width="48" height="4" fill-opacity="0.35"/>
+            </g>
+          </svg>
+        </p>
+        <form action="/drones" method="post">{% csrf_token %}<button id="btn-drones" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 9. Reportes -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Reportes</h5>
+        <p class="card-text"><i class="fa-solid fa-file-lines fa-4x"></i></p>
+        <form action="/reported" method="post">{% csrf_token %}<button id="btn-reported" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+      <!-- 10. Soporte -->
+      <div class="col-md-4 mb-4"><div class="event-card"><div class="card-body">
+        <h5 class="card-title">Soporte</h5>
+        <p class="card-text"><i class="fa-solid fa-handshake-angle fa-4x"></i></p>
+        <form action="/support" method="post">{% csrf_token %}<button id="btn-support" type="submit" class="btn btn-primary">Ingresar</button></form>
+      </div></div></div>
+
+    </div>
+  </div>
+
+</body>
+<script type="text/javascript" src='{% static "js/grid.js" %}'></script>
+
+</html>
