@@ -14,7 +14,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
     <style>
         body {
-      background-color: #f2f4f7;
+            background-color: #f2f4f7;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -79,7 +79,6 @@
             border-color: #0056b3;
         }
 
-        /* Mapa de Leaflet */
         #map {
             width: 100%;
             height: 300px;
@@ -87,7 +86,6 @@
             margin-bottom: 20px;
         }
 
-        /* Calendario */
         #calendar {
             width: 100%;
             height: 300px;
@@ -100,7 +98,6 @@
             color: white;
         }
 
-        /* Clima */
         #clima {
             width: 100%;
             height: 380px;
@@ -128,9 +125,18 @@
 
         #infoia card-body {
             max-height: 400px;
-            /* Ajusta esto a la altura que prefieras */
             overflow-y: auto;
-            /* Permite el desbordamiento vertical (scroll) */
+        }
+
+        .lote-label {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: bold;
+            font-size: 12px;
+            color: #333;
+            text-align: center;
+            text-shadow: 1px 1px 2px white, -1px -1px 2px white;
         }
     </style>
 </head>
@@ -157,92 +163,116 @@
     <div class="container mt-5">
         <div class="event-grid">
             <div class="col-md-10">
-                <!-- Blog de Noticias -->
-                <h2 class="text-center mb-4">Blog de Noticias</h2>
-                <div class="event-card">
+                <h2 class="text-center mb-4">Asistente Inteligente</h2>
+                <div id="infoia" class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Nuevos Horarios</h5>
-                        <p class="card-text">A partir de esta semana, nuestros horarios de atención serán los
-                            siguientes: Lunes a Viernes de 8:00 am a 6:00 pm.</p>
-                    </div>
-                </div>
-                <div class="event-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Promoción Especial</h5>
-                        <p class="card-text">No te pierdas nuestra promoción especial de primavera! Obtén un 20% de
-                            descuento en todos nuestros productos hasta el 30 de abril.</p>
-                    </div>
-                </div>
-                <div class="event-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Nuevo Producto</h5>
-                        <p class="card-text">¡Estamos emocionados de anunciar el lanzamiento de nuestro nuevo producto!
-                            Descubre más en nuestro sitio web.</p>
+                        <h5 class="card-title">Recomendaciones</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fa-solid fa-spray-can text-primary me-2"></i>
+                                <strong>Fumigación:</strong> Aplicar en Lote B (Sin riesgo de lluvia).
+                            </li>
+                            <li class="mb-2"><i class="fa-solid fa-cloud-showers-heavy text-info me-2"></i>
+                                <strong>Riego:</strong> Suspender riego en Lote Sur por probabilidad de lluvia (76%).
+                            </li>
+                            <li class="mb-2"><i class="fa-solid fa-magnifying-glass text-warning me-2"></i>
+                                <strong>Monitoreo:</strong> Revisar Lote Norte por posibles signos de plagas debido a la
+                                humedad reciente.
+                            </li>
+                            <li class="mb-2"><i class="fa-solid fa-seedling text-success me-2"></i>
+                                <strong>Fertilización:</strong> Condiciones óptimas para fertilizar Lote C esta tarde.
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
             <div class="col-md-10">
-                <!-- Clima -->
                 <h2 class="text-center mb-4">Predicción meteorológica</h2>
                 <div id="info" class="card">
                     <div class="card-body">
                         <h5 class="card-title"></h5>
-                        <p class="card-text">
-                            <i class="fa-solid fa-poo-storm fa-4x"></i>
-                        <p class="card-text">En su finca es probable que mañana llueva en un 76%. Se recomienda agregar
-                            humedad al cultivo.</p>
-                        <i class="fa-solid fa-seedling"></i>
-                        <p class="card-text">Temperatura: 24°C</p>
-                        <i class="fa-solid fa-seedling"></i>
-                        <p class="card-text">Humedad: 78%</p>
-                        <i class="fa-solid fa-seedling"></i>
-                        <p class="card-text">Viento: 10 km/h</p>
-                        <i class="fa-solid fa-seedling"></i>
-                        <p class="card-text">V/h</p>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-cloud-rain text-primary"></i>
+                                <strong>Precipitación:</strong><br>15mm (76% prob.)
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-temperature-high text-danger"></i>
+                                <strong>Temperatura:</strong><br>Máx 28°C / Mín 18°C
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-droplet text-info"></i> <strong>Humedad Rel.:</strong><br>78%
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-wind text-secondary"></i> <strong>Viento:</strong><br>10 km/h NE
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-sun text-warning"></i> <strong>Rad. Solar:</strong><br>5.5 kWh/m²
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-water text-success"></i> <strong>ETo:</strong><br>4.2 mm/día
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-leaf text-success"></i> <strong>Humedad Hoja:</strong><br>4 horas
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fa-solid fa-layer-group" style="color: #8B4513;"></i> <strong>Humedad
+                                    Suelo:</strong><br>25%
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted"><i class="fa-solid fa-circle-info"></i> Punto de Rocío:
+                                    16°C</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-10">
-                <!-- Mapa de Leaflet -->
+                <h2 class="text-center mb-4">Blog de Noticias Agrícolas</h2>
+                <div class="event-card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa-solid fa-bug text-danger"></i> Alerta: Plaga en Cundinamarca
+                        </h5>
+                        <p class="card-text"><small class="text-muted">El Tiempo - Hace 2 horas</small></p>
+                        <p class="card-text">Autoridades agrícolas reportan brote de gusano cogollero en cultivos de
+                            maíz
+                            en municipios de Cundinamarca. Se recomienda monitoreo preventivo.</p>
+                    </div>
+                </div>
+                <div class="event-card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa-solid fa-cloud-sun-rain text-primary"></i> Pronóstico
+                            Semanal</h5>
+                        <p class="card-text"><small class="text-muted">IDEAM - Hoy</small></p>
+                        <p class="card-text">Se esperan lluvias moderadas en la región Andina durante los próximos 5
+                            días.
+                            Planifique sus actividades de campo con anticipación.</p>
+                    </div>
+                </div>
+                <div class="event-card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa-solid fa-chart-line text-success"></i> Precios del Café
+                            Suben</h5>
+                        <p class="card-text"><small class="text-muted">Portafolio - Ayer</small></p>
+                        <p class="card-text">El precio del café arábica aumentó 8% esta semana debido a la alta demanda
+                            internacional. Buen momento para comercializar.</p>
+                    </div>
+                </div>
+                <div class="event-card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fa-solid fa-seedling text-warning"></i> Nueva Tecnología
+                            Agrícola</h5>
+                        <p class="card-text"><small class="text-muted">Agronegocios - Hace 1 día</small></p>
+                        <p class="card-text">Ministerio de Agricultura lanza programa de drones para monitoreo de
+                            cultivos.
+                            Inscripciones abiertas para pequeños productores.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10">
                 <h2 class="text-center mb-4">Ubicación de tu finca</h2>
                 <div id="map" class="card"></div>
             </div>
-            <div class="col-md-10">
-                <!-- Clima -->
-                <h2 class="text-center mb-4">Sugerencias de tu asistene inteligente</h2>
-                <div id="infoia" class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text">
-                            <i class="fa-brands fa-slack fa-3x"></i>
-                        <p class="card-text">En su finca es probable que mañana llueva en un 76%. Se recomienda agregar
-                            humedad al cultivo.
-                            Optimización del riego:
-                            "Con esta tecnología, podemos saber exactamente cuándo y cuánto regar las plantas, evitando
-                            el desperdicio de agua y asegurando que nuestras cosechas reciban la cantidad justa para
-                            crecer sanas y fuertes."
-                            Detección de enfermedades y plagas:
-                            "Imagina poder detectar cualquier problema en tus cultivos antes de que sea visible a simple
-                            vista. Esta IA nos ayuda a identificar cualquier signo de enfermedades o plagas de manera
-                            temprana, para que podamos actuar rápidamente y proteger nuestras plantas."
-                            Predicción de cosechas:
-                            "Con esta tecnología, podemos prever cuánto vamos a cosechar con una precisión increíble.
-                            Esto nos permite planificar mejor nuestras operaciones, desde la siembra hasta la cosecha, y
-                            nos ayuda a tomar decisiones informadas sobre la gestión de nuestros cultivos."
-                            Optimización de la fertilización:
-                            "La IA nos dice exactamente quÃ© nutrientes necesitan nuestras plantas en cada etapa de su
-                            crecimiento. De esta manera, podemos asegurarnos de proporcionarles los nutrientes adecuados
-                            en el momento justo, maximizando así su rendimiento y calidad."
-                            Alertas meteorológicas personalizadas:
-                            "Gracias a esta tecnología, recibimos alertas personalizadas sobre cualquier cambio en el
-                            clima que pueda afectar nuestras cosechas. Esto nos permite tomar medidas preventivas a
-                            tiempo, como cubrir los cultivos durante una tormenta, para proteger nuestra inversión y
-                            garantizar una buena cosecha."</p>
-                    </div>
-                </div>
-                <h1></h1>
-            </div>
-            <form action="/inicio" method="post" class="d-flex justify-content-center">
+            <form action="/inicio" method="post" class="d-flex justify-content-center mt-4">
                 {% csrf_token %}
                 <button id="btn-datos-cultivo" type="submit" class="btn btn-primary">Regresar</button>
             </form>
@@ -286,13 +316,77 @@
 
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script>
-            var map = L.map('map').setView([4.710989, -74.072090], 13);
+            var map = L.map('map').setView([2.710989, -74.072090], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
+
             L.marker([2.710989, -74.072090]).addTo(map)
-                .bindPopup('Acá se ubica tu finca')
+                .bindPopup('<b>🏡 Tu Finca</b><br>Acá se ubica tu finca<br><small>Área total: 50 hectáreas</small>')
                 .openPopup();
+
+            var loteNorte = L.polygon([
+                [2.712800, -74.071800],
+                [2.712800, -74.071200],
+                [2.712200, -74.071200],
+                [2.712200, -74.071800]
+            ], { color: 'orange', fillColor: '#FFA500', fillOpacity: 0.4 }).addTo(map);
+            loteNorte.bindPopup('<b>🌾 Lote Norte</b><br>' +
+                '<b>Recomendación:</b> Revisar por posibles signos de plagas<br>' +
+                '<b>Cultivo:</b> Maíz<br>' +
+                '<b>Humedad Suelo:</b> 28%<br>' +
+                '<b>Temp. Actual:</b> 24°C<br>' +
+                '<b>Precipitación hoy:</b> 0mm<br>' +
+                '<small>⚠️ Alta humedad reciente favorece plagas</small>');
+            loteNorte.bindTooltip("Lote Norte<br>Maíz", { permanent: true, direction: 'center', className: 'lote-label' });
+
+            var loteB = L.polygon([
+                [2.712100, -74.073300],
+                [2.712100, -74.072700],
+                [2.711500, -74.072700],
+                [2.711500, -74.073300]
+            ], { color: 'blue', fillColor: '#0066FF', fillOpacity: 0.4 }).addTo(map);
+            loteB.bindPopup('<b>🌱 Lote B</b><br>' +
+                '<b>Recomendación:</b> Aplicar fumigación<br>' +
+                '<b>Cultivo:</b> Café<br>' +
+                '<b>Humedad Suelo:</b> 22%<br>' +
+                '<b>Temp. Actual:</b> 26°C<br>' +
+                '<b>Precipitación próx. 24h:</b> 0mm (0%)<br>' +
+                '<b>Viento:</b> 8 km/h<br>' +
+                '<small>✅ Condiciones ideales para fumigación</small>');
+            loteB.bindTooltip("Lote B<br>Café", { permanent: true, direction: 'center', className: 'lote-label' });
+
+            var loteSur = L.polygon([
+                [2.709800, -74.072800],
+                [2.709800, -74.072200],
+                [2.709200, -74.072200],
+                [2.709200, -74.072800]
+            ], { color: 'cyan', fillColor: '#00CED1', fillOpacity: 0.4 }).addTo(map);
+            loteSur.bindPopup('<b>💧 Lote Sur</b><br>' +
+                '<b>Recomendación:</b> Suspender riego<br>' +
+                '<b>Cultivo:</b> Plátano<br>' +
+                '<b>Humedad Suelo:</b> 30%<br>' +
+                '<b>Temp. Actual:</b> 25°C<br>' +
+                '<b>Precipitación próx. 24h:</b> 15mm (76%)<br>' +
+                '<b>Humedad Rel.:</b> 82%<br>' +
+                '<small>☔ Lluvia probable - No regar</small>');
+            loteSur.bindTooltip("Lote Sur<br>Plátano", { permanent: true, direction: 'center', className: 'lote-label' });
+
+            var loteC = L.polygon([
+                [2.710500, -74.071100],
+                [2.710500, -74.070500],
+                [2.709900, -74.070500],
+                [2.709900, -74.071100]
+            ], { color: 'green', fillColor: '#32CD32', fillOpacity: 0.4 }).addTo(map);
+            loteC.bindPopup('<b>🌿 Lote C</b><br>' +
+                '<b>Recomendación:</b> Fertilizar esta tarde<br>' +
+                '<b>Cultivo:</b> Aguacate<br>' +
+                '<b>Humedad Suelo:</b> 24%<br>' +
+                '<b>Temp. Actual:</b> 23°C<br>' +
+                '<b>Precipitación próx. 48h:</b> 12mm (60%)<br>' +
+                '<b>Radiación Solar:</b> 5.2 kWh/m²<br>' +
+                '<small>✅ Óptimo para fertilización</small>');
+            loteC.bindTooltip("Lote C<br>Aguacate", { permanent: true, direction: 'center', className: 'lote-label' });
         </script>
 </body>
 
